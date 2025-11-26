@@ -30,11 +30,17 @@ export async function transcribeAudio(filePath: string): Promise<string> {
   }
 
   try {
-    const audioFile = fs.createReadStream(filePath);
+    // Read file as buffer to ensure proper file format detection
+    const audioBuffer = fs.readFileSync(filePath);
+    const fileName = filePath.split('/').pop() || 'audio.ogg';
+    
     const groq = getGroqClient();
     
+    // Create a File-like object that Groq SDK can understand
+    const audioFile = new File([audioBuffer], fileName, { type: 'audio/ogg' });
+    
     const transcription = await groq.audio.transcriptions.create({
-      file: audioFile,
+      file: audioFile as any,
       model: "whisper-large-v3",
       language: "pt",
       response_format: "json",

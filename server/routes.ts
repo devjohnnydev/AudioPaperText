@@ -6,9 +6,25 @@ import path from "path";
 import fs from "fs";
 import { transcribeAudio, extractTextFromImage, generateIntelligentReport } from "./ai-service";
 
-// Configure multer for file uploads
+// Configure multer storage to preserve file extensions
+const storage_multer = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = "uploads";
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext);
+    const timestamp = Date.now();
+    cb(null, `${name}_${timestamp}${ext}`);
+  },
+});
+
 const upload = multer({
-  dest: "uploads/",
+  storage: storage_multer,
   limits: {
     fileSize: 25 * 1024 * 1024, // 25MB limit
   },
@@ -17,7 +33,7 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Ensure uploads directory exists
   if (!fs.existsSync("uploads")) {
-    fs.mkdirSync("uploads");
+    fs.mkdirSync("uploads", { recursive: true });
   }
 
   /**
@@ -37,7 +53,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transcription = await transcribeAudio(filePath);
 
       // Clean up uploaded file
-      fs.unlinkSync(filePath);
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        console.warn("Could not delete file:", filePath);
+      }
 
       res.json({
         success: true,
@@ -46,6 +66,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error("Erro na transcrição:", error);
+      // Try to clean up on error
+      if (req.file?.path) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (err) {
+          console.warn("Could not delete file on error:", req.file.path);
+        }
+      }
       res.status(500).json({
         error: "Erro ao transcrever áudio",
         details: error.message,
