@@ -1,13 +1,25 @@
 import fs from "node:fs";
 import { type Server } from "node:http";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import express, { type Express, type Request } from "express";
 
 import runApp from "./app";
 
 export async function serveStatic(app: Express, server: Server) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  // Support both bundled and unbundled environments
+  let distPath: string;
+  
+  try {
+    // Try using import.meta.url (works in some environments)
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    distPath = path.resolve(__dirname, "public");
+  } catch {
+    // Fallback for Railway/production bundled environment
+    distPath = path.resolve(process.cwd(), "dist", "public");
+  }
 
   if (!fs.existsSync(distPath)) {
     throw new Error(

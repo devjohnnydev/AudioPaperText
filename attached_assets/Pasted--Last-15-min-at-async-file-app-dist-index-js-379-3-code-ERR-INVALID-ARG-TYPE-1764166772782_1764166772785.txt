@@ -1,0 +1,168 @@
+
+
+
+Last 15 min
+
+
+    at async file:///app/dist/index.js:379:3 {
+  code: 'ERR_INVALID_ARG_TYPE'
+}
+Node.js v18.20.5
+npm warn config production Use `--omit=dev` instead.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
+You are using Node.js 18.20.5. Vite requires Node.js version 20.19+ or 22.12+. Please upgrade your Node.js version.
+vite v7.1.12 building for production...
+transforming...
+✓ 2256 modules transformed.
+../dist/public/index.html                   1.45 kB │ gzip:   0.58 kB
+../dist/public/assets/index-DTUuiHPE.css  102.02 kB │ gzip:  16.60 kB
+../dist/public/assets/index-CuhoLF58.js   822.26 kB │ gzip: 247.72 kB
+rendering chunks...
+computing gzip size...
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.51s
+  dist/index.js  11.8kb
+⚡ Done in 4ms
+npm warn config production Use `--omit=dev` instead.
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+node:internal/errors:496
+    at async file:///app/dist/index.js:379:3 {
+    ErrorCaptureStackTrace(err);
+    ^
+  code: 'ERR_INVALID_ARG_TYPE'
+}
+TypeError [ERR_INVALID_ARG_TYPE]: The "paths[0]" argument must be of type string. Received undefined
+    at new NodeError (node:internal/errors:405:5)
+Node.js v18.20.5
+    at validateString (node:internal/validators:162:11)
+    at Object.resolve (node:path:1097:7)
+    at serveStatic (file:///app/dist/index.js:367:25)
+    at runApp (file:///app/dist/index.js:354:9)
+npm warn config production Use `--omit=dev` instead.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
+You are using Node.js 18.20.5. Vite requires Node.js version 20.19+ or 22.12+. Please upgrade your Node.js version.
+vite v7.1.12 building for production...
+transforming...
+✓ 2256 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                   1.45 kB │ gzip:   0.58 kB
+../dist/public/assets/index-DTUuiHPE.css  102.02 kB │ gzip:  16.60 kB
+../dist/public/assets/index-CuhoLF58.js   822.26 kB │ gzip: 247.72 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.60s
+  dist/index.js  11.8kb
+⚡ Done in 6ms
+npm warn config production Use `--omit=dev` instead.
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+node:internal/errors:496
+    ErrorCaptureStackTrace(err);
+    ^
+TypeError [ERR_INVALID_ARG_TYPE]: The "paths[0]" argument must be of type string. Received undefined
+    at new NodeError (node:internal/errors:405:5)
+    at validateString (node:internal/validators:162:11)
+    at Object.resolve (node:path:1097:7)
+    at serveStatic (file:///app/dist/index.js:367:25)
+    at runApp (file:///app/dist/index.js:354:9)
+    at async file:///app/dist/index.js:379:3 {
+  code: 'ERR_INVALID_ARG_TYPE'
+}
+Node.js v18.20.5
+You are using Node.js 18.20.5. Vite requires Node.js version 20.19+ or 22.12+. Please upgrade your Node.js version.
+npm warn config production Use `--omit=dev` instead.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
+vite v7.1.12 building for production...
+transforming...
+✓ 2256 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                   1.45 kB │ gzip:   0.58 kB
+../dist/public/assets/index-DTUuiHPE.css  102.02 kB │ gzip:  16.60 kB
+../dist/public/assets/index-CuhoLF58.js   822.26 kB │ gzip: 247.72 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.05s
+  dist/index.js  11.8kb
+⚡ Done in 6ms
+npm warn config production Use `--omit=dev` instead.
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+}
+Node.js v18.20.5
+    at serveStatic (file:///app/dist/index.js:367:25)
+    at runApp (file:///app/dist/index.js:354:9)
+node:internal/errors:496
+    at async file:///app/dist/index.js:379:3 {
+    at new NodeError (node:internal/errors:405:5)
+    at validateString (node:internal/validators:162:11)
+  code: 'ERR_INVALID_ARG_TYPE'
+    at Object.resolve (node:path:1097:7)
+    ErrorCaptureStackTrace(err);
+    ^
+TypeError [ERR_INVALID_ARG_TYPE]: The "paths[0]" argument must be of type string. Received undefined
+npm warn config production Use `--omit=dev` instead.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
+You are using Node.js 18.20.5. Vite requires Node.js version 20.19+ or 22.12+. Please upgrade your Node.js version.
+vite v7.1.12 building for production...
+transforming...
+✓ 2256 modules transformed.
+(!) Some chunks are larger than 500 kB after minification. Consider:
+../dist/public/index.html                   1.45 kB │ gzip:   0.58 kB
+rendering chunks...
+../dist/public/assets/index-DTUuiHPE.css  102.02 kB │ gzip:  16.60 kB
+computing gzip size...
+../dist/public/assets/index-CuhoLF58.js   822.26 kB │ gzip: 247.72 kB
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.49s
+  dist/index.js  11.8kb
+⚡ Done in 5ms
+npm warn config production Use `--omit=dev` instead.
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+node:internal/errors:496
+    ErrorCaptureStackTrace(err);
+    ^
+TypeError [ERR_INVALID_ARG_TYPE]: The "paths[0]" argument must be of type string. Received undefined
+    at new NodeError (node:internal/errors:405:5)
+    at validateString (node:internal/validators:162:11)
+    at Object.resolve (node:path:1097:7)
+    at serveStatic (file:///app/dist/index.js:367:25)
+    at runApp (file:///app/dist/index.js:354:9)
+    at async file:///app/dist/index.js:379:3 {
+  code: 'ERR_INVALID_ARG_TYPE'
+}
+Node.js v18.20.5
+npm warn config production Use `--omit=dev` instead.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
+You are using Node.js 18.20.5. Vite requires Node.js version 20.19+ or 22.12+. Please upgrade your Node.js version.
+vite v7.1.12 building for production...
+transforming...
+✓ 2256 modules transformed.
+rendering chunks...
+✓ built in 5.38s
+../dist/public/assets/index-DTUuiHPE.css  102.02 kB │ gzip:  16.60 kB
+../dist/public/assets/index-CuhoLF58.js   822.26 kB │ gzip: 247.72 kB
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+computing gzip size...
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+../dist/public/index.html                   1.45 kB │ gzip:   0.58 kB
+- Using dynamic import() to code-split the application
+  dist/index.js  11.8kb
