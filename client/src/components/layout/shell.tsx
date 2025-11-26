@@ -1,9 +1,7 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Moon, Sun, Zap, MessageSquare, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 
 interface ShellProps {
   children: ReactNode;
@@ -11,14 +9,19 @@ interface ShellProps {
 
 export function Shell({ children }: ShellProps) {
   const [location] = useLocation();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const theme = localStorage.getItem("theme") || "light";
+    setIsDark(theme === "dark");
   }, []);
 
-  if (!mounted) return null;
+  const toggleTheme = () => {
+    const newTheme = isDark ? "light" : "dark";
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    setIsDark(!isDark);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
@@ -57,11 +60,11 @@ export function Shell({ children }: ShellProps) {
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              onClick={toggleTheme}
               className="text-muted-foreground hover:text-primary transition-colors rounded-full"
-              title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+              title={isDark ? "Modo claro" : "Modo escuro"}
             >
-              {theme === "dark" ? (
+              {isDark ? (
                 <Sun className="h-5 w-5" />
               ) : (
                 <Moon className="h-5 w-5" />

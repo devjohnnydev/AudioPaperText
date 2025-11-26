@@ -18,7 +18,7 @@ O projeto usa a **Groq API** (gratuita e rápida) para todos os serviços de IA:
 1. Acesse [console.groq.com](https://console.groq.com/keys)
 2. Crie uma conta (gratuito)
 3. Gere uma API key
-4. Adicione aos secrets do Replit ou arquivo `.env`
+4. Adicione às variáveis de ambiente
 
 ```bash
 GROQ_API_KEY=sua_chave_aqui
@@ -125,9 +125,7 @@ No painel do Railway, adicione:
 
 ### Erro: "GROQ_API_KEY não configurada"
 - Certifique-se de ter adicionado a chave nas variáveis de ambiente
-- No Replit: Use a aba "Secrets"
-- No Railway: Use a aba "Variables"
-- Localmente: Crie um arquivo `.env`
+- Crie um arquivo `.env` com: `GROQ_API_KEY=sua_chave_aqui`
 
 ### Erro no upload de arquivo
 - Verifique se o arquivo tem menos de 25MB
