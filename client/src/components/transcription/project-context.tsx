@@ -5,9 +5,9 @@ export type ProjectItem = {
   type: "audio" | "ocr";
   name: string;
   status: "pending" | "processing" | "completed" | "error";
-  content?: string; // The transcription or extracted text
+  content?: string;
   file?: File;
-  preview?: string; // For images
+  preview?: string;
 };
 
 interface ProjectContextType {
@@ -53,40 +53,45 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const generateReport = async () => {
     setIsGeneratingReport(true);
     
-    // Simulate AI Summary generation
-    return new Promise<string>((resolve) => {
-      setTimeout(() => {
-        const summary = `
-RELATÓRIO EXECUTIVO E PLANO DE AÇÃO
-Data: ${new Date().toLocaleDateString('pt-BR')}
+    try {
+      // Prepare data for API
+      const audioItems = items
+        .filter(i => i.type === 'audio' && i.status === 'completed' && i.content)
+        .map(i => ({ name: i.name, content: i.content! }));
+      
+      const ocrItems = items
+        .filter(i => i.type === 'ocr' && i.status === 'completed' && i.content)
+        .map(i => ({ name: i.name, content: i.content! }));
 
-RESUMO GERAL:
-O projeto contém ${items.filter(i => i.type === 'audio').length} arquivos de áudio e ${items.filter(i => i.type === 'ocr').length} documentos digitalizados. 
-A análise cruzada indica uma necessidade de reestruturação nos processos de atendimento ao cliente e digitalização de arquivos físicos.
+      // Call real API
+      const response = await fetch('/api/generate-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ audioItems, ocrItems }),
+      });
 
-PRINCIPAIS PONTOS IDENTIFICADOS:
-1. Reuniões de Equipe (Áudio):
-   - Foi discutido o novo cronograma de lançamentos.
-   - Identificada falha na comunicação entre vendas e marketing.
-   - Ação Necessária: Agendar reunião de alinhamento semanal.
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.details || error.error || 'Erro ao gerar relatório');
+      }
 
-2. Documentos Digitalizados (Manuscritos):
-   - As notas manuais contêm esboços da nova interface.
-   - Lista de pendências técnicas prioritárias identificada.
-   - Ação Necessária: Transpor esboços para o Figma até sexta-feira.
-
-PLANO DE AÇÃO SUGERIDO:
-[ ] Criar canal de comunicação unificado (Slack/Discord).
-[ ] Digitalizar o restante do arquivo morto de 2023.
-[ ] Revisar o orçamento de Q4 com base nas transcrições financeiras.
-
-Este relatório foi gerado automaticamente pela Trust AI.
-        `;
-        setReportSummary(summary);
-        setIsGeneratingReport(false);
-        resolve(summary);
-      }, 2500);
-    });
+      const data = await response.json();
+      setReportSummary(data.report);
+      setIsGeneratingReport(false);
+      return data.report;
+    } catch (error: any) {
+      console.error('Erro ao gerar relatório:', error);
+      setIsGeneratingReport(false);
+      
+      // Fallback to simple concatenation if API fails
+      const fallbackReport = `RELATÓRIO CONSOLIDADO - Trust AI\nData: ${new Date().toLocaleDateString('pt-BR')}\n\n` +
+        `ERRO: ${error.message}\n\nPor favor, verifique se a GROQ_API_KEY está configurada corretamente.`;
+      
+      setReportSummary(fallbackReport);
+      return fallbackReport;
+    }
   };
 
   return (

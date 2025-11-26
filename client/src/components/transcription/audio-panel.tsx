@@ -1,9 +1,8 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, FileAudio, Mic, Loader2, Copy, Check, FileText, Plus, Play } from "lucide-react";
+import { Upload, FileAudio, Mic, Loader2, Copy, Check, FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,11 +11,9 @@ import { useProject } from "./project-context";
 export function AudioPanel() {
   const { addItem, updateItemStatus, items } = useProject();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentProcessingIndex, setCurrentProcessingIndex] = useState(0);
   const [activeTranscript, setActiveTranscript] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Only show audio items in this panel
   const audioItems = items.filter(i => i.type === 'audio');
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -39,33 +36,54 @@ export function AudioPanel() {
     accept: {
       'audio/*': ['.mp3', '.wav', '.m4a', '.ogg']
     },
-    maxFiles: 20 // Increased limit
+    maxFiles: 20
   });
 
   const processQueue = async () => {
-    if (audioItems.filter(i => i.status === 'pending').length === 0) return;
+    const pendingItems = audioItems.filter(i => i.status === 'pending');
+    if (pendingItems.length === 0) return;
     
     setIsProcessing(true);
-    
-    const pendingItems = audioItems.filter(i => i.status === 'pending');
     
     for (let i = 0; i < pendingItems.length; i++) {
       const item = pendingItems[i];
       updateItemStatus(item.id, "processing");
       
-      // Simulate processing time per file
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const mockTranscript = `[Transcrição de ${item.name}]\nNeste áudio, discutimos os pontos críticos do projeto e alinhamos as expectativas para a próxima sprint. Foi mencionado que a equipe de design precisa entregar os assets até quarta-feira.\n\n`;
-      
-      updateItemStatus(item.id, "completed", mockTranscript);
-      setActiveTranscript(prev => prev + mockTranscript);
+      try {
+        // Call real API
+        const formData = new FormData();
+        formData.append('audio', item.file!);
+        
+        const response = await fetch('/api/transcribe-audio', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.details || error.error || 'Erro na transcrição');
+        }
+
+        const data = await response.json();
+        const transcription = `[${item.name}]\n${data.transcription}\n\n`;
+        
+        updateItemStatus(item.id, "completed", transcription);
+        setActiveTranscript(prev => prev + transcription);
+      } catch (error: any) {
+        console.error('Erro ao transcrever:', error);
+        updateItemStatus(item.id, "error");
+        toast({
+          title: "Erro na transcrição",
+          description: error.message || "Falha ao processar áudio",
+          variant: "destructive",
+        });
+      }
     }
 
     setIsProcessing(false);
     toast({
-      title: "Processamento em Lote Concluído",
-      description: "Todos os áudios foram transcritos com sucesso.",
+      title: "Processamento Concluído",
+      description: `${pendingItems.length} áudio(s) transcrito(s) com sucesso.`,
     });
   };
 
@@ -78,7 +96,6 @@ export function AudioPanel() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-      {/* Input Section */}
       <div className="space-y-6 flex flex-col">
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
@@ -122,6 +139,7 @@ export function AudioPanel() {
                            {item.status === 'pending' && 'Aguardando...'}
                            {item.status === 'processing' && 'Transcrevendo...'}
                            {item.status === 'completed' && 'Concluído'}
+                           {item.status === 'error' && 'Erro'}
                         </p>
                       </div>
                       {item.status === 'completed' && <Check className="h-4 w-4 text-green-500" />}
@@ -178,7 +196,6 @@ export function AudioPanel() {
         </motion.div>
       </div>
 
-      {/* Output Section */}
       <motion.div 
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}

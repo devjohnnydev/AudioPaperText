@@ -3,7 +3,6 @@ import { useDropzone } from "react-dropzone";
 import { ScanText, Loader2, Copy, Check, Image as ImageIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,29 +41,50 @@ export function OcrPanel() {
   });
 
   const processQueue = async () => {
-    if (ocrItems.filter(i => i.status === 'pending').length === 0) return;
+    const pendingItems = ocrItems.filter(i => i.status === 'pending');
+    if (pendingItems.length === 0) return;
     
     setIsProcessing(true);
-    
-    const pendingItems = ocrItems.filter(i => i.status === 'pending');
     
     for (let i = 0; i < pendingItems.length; i++) {
       const item = pendingItems[i];
       updateItemStatus(item.id, "processing");
       
-      // Simulate processing
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const mockText = `[Texto extraído de ${item.name}]\nPlano do Projeto Trust AI:\n1. Integração Whisper para Áudio\n2. Adicionar Llama 3 Vision para OCR\n\n`;
-      
-      updateItemStatus(item.id, "completed", mockText);
-      setActiveText(prev => prev + mockText);
+      try {
+        // Call real API
+        const formData = new FormData();
+        formData.append('image', item.file!);
+        
+        const response = await fetch('/api/extract-text', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.details || error.error || 'Erro na extração');
+        }
+
+        const data = await response.json();
+        const extractedText = `[${item.name}]\n${data.extractedText}\n\n`;
+        
+        updateItemStatus(item.id, "completed", extractedText);
+        setActiveText(prev => prev + extractedText);
+      } catch (error: any) {
+        console.error('Erro ao extrair texto:', error);
+        updateItemStatus(item.id, "error");
+        toast({
+          title: "Erro na extração",
+          description: error.message || "Falha ao processar imagem",
+          variant: "destructive",
+        });
+      }
     }
 
     setIsProcessing(false);
     toast({
-      title: "Extração em Lote Concluída",
-      description: "Todos os textos foram extraídos.",
+      title: "Extração Concluída",
+      description: `${pendingItems.length} imagem(ns) processada(s) com sucesso.`,
     });
   };
 
@@ -77,7 +97,6 @@ export function OcrPanel() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-      {/* Input Section */}
       <div className="space-y-6 flex flex-col">
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
@@ -172,7 +191,6 @@ export function OcrPanel() {
         </motion.div>
       </div>
 
-      {/* Output Section */}
       <motion.div 
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
