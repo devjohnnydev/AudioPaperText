@@ -173,7 +173,7 @@ export function OcrPanel() {
               </span>
               <span className="text-primary">{progress}%</span>
             </div>
-            <Progress value={progress} className="h-2.5 bg-secondary" />
+            <Progress value={progress} className="h-2.5 bg-secondary" indicatorClassName="bg-primary" />
           </motion.div>
         )}
       </div>
