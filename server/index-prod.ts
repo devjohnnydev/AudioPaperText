@@ -14,14 +14,13 @@ export async function serveStatic(app: Express, server: Server) {
   });
 
   // Support both bundled and unbundled environments
-  let distPath: string;
   const cwd = process.cwd();
+  let distPath = path.resolve(cwd, "dist", "public");
   
   // Try multiple possible locations for the build directory
   const possiblePaths = [
     path.resolve(cwd, "dist", "public"),
     path.resolve(cwd, "public"),
-    path.resolve(import.meta.dirname, "public"),
   ];
   
   for (const candidate of possiblePaths) {
@@ -29,14 +28,6 @@ export async function serveStatic(app: Express, server: Server) {
       distPath = candidate;
       break;
     }
-  }
-  
-  if (!distPath) {
-    console.warn(
-      `Build directory not found in: ${possiblePaths.join(", ")}. Continuing without static files.`
-    );
-    // Don't throw - let the app continue without static files
-    distPath = possiblePaths[0];
   }
 
   console.log(`Serving static files from: ${distPath}`);
