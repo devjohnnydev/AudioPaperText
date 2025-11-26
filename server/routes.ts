@@ -97,12 +97,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert to base64
       const imageBuffer = fs.readFileSync(filePath);
       const base64Image = imageBuffer.toString("base64");
+      
+      // Get the file extension to determine mime type
+      const ext = path.extname(fileName).toLowerCase();
+      let mimeType = "image/jpeg";
+      if (ext === ".png") mimeType = "image/png";
+      if (ext === ".webp") mimeType = "image/webp";
+      if (ext === ".gif") mimeType = "image/gif";
 
       // Extract text using Groq Vision
-      const extractedText = await extractTextFromImage(base64Image);
+      const extractedText = await extractTextFromImage(base64Image, mimeType);
 
       // Clean up uploaded file
-      fs.unlinkSync(filePath);
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        console.warn("Could not delete file:", filePath);
+      }
 
       res.json({
         success: true,
@@ -111,6 +122,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error("Erro no OCR:", error);
+      // Try to clean up on error
+      if (req.file?.path) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (err) {
+          console.warn("Could not delete file on error:", req.file.path);
+        }
+      }
       res.status(500).json({
         error: "Erro ao extrair texto",
         details: error.message,

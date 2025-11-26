@@ -56,7 +56,7 @@ export async function transcribeAudio(filePath: string): Promise<string> {
 /**
  * Extract text from image using Groq Llama Vision
  */
-export async function extractTextFromImage(base64Image: string): Promise<string> {
+export async function extractTextFromImage(base64Image: string, mimeType: string = "image/jpeg"): Promise<string> {
   if (!isGroqConfigured()) {
     return "📸 Modo Demo: Para usar OCR real, configure GROQ_API_KEY nas variáveis de ambiente.";
   }
@@ -76,7 +76,7 @@ export async function extractTextFromImage(base64Image: string): Promise<string>
             {
               type: "image_url",
               image_url: {
-                url: `data:image/jpeg;base64,${base64Image}`,
+                url: `data:${mimeType};base64,${base64Image}`,
               },
             },
           ],
