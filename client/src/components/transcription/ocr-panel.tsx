@@ -1,74 +1,75 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { ScanText, Loader2, Copy, Check, Image as ImageIcon } from "lucide-react";
+import { ScanText, Loader2, Copy, Check, Image as ImageIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { useProject } from "./project-context";
 
 export function OcrPanel() {
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const { addItem, updateItemStatus, items } = useProject();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [extractedText, setExtractedText] = useState("");
+  const [activeText, setActiveText] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const ocrItems = items.filter(i => i.type === 'ocr');
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const selected = acceptedFiles[0];
-    if (selected) {
-      setFile(selected);
-      setPreview(URL.createObjectURL(selected));
-      setExtractedText("");
-      toast({
-        title: "Imagem carregada",
-        description: "Pronto para extrair texto.",
+    acceptedFiles.forEach(file => {
+      addItem({
+        type: "ocr",
+        name: file.name,
+        file: file,
+        preview: URL.createObjectURL(file)
       });
-    }
-  }, []);
+    });
+    
+    toast({
+      title: "Imagem adicionada ao projeto",
+      description: "Pronto para extrair texto.",
+    });
+  }, [addItem]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.webp']
     },
-    maxFiles: 1
+    maxFiles: 10
   });
 
-  const handleExtract = async () => {
-    if (!file) return;
+  const processQueue = async () => {
+    if (ocrItems.filter(i => i.status === 'pending').length === 0) return;
     
     setIsProcessing(true);
-    setProgress(0);
+    
+    const pendingItems = ocrItems.filter(i => i.status === 'pending');
+    
+    for (let i = 0; i < pendingItems.length; i++) {
+      const item = pendingItems[i];
+      updateItemStatus(item.id, "processing");
+      
+      // Simulate processing
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const mockText = `[Texto extraído de ${item.name}]\nPlano do Projeto Trust AI:\n1. Integração Whisper para Áudio\n2. Adicionar Llama 3 Vision para OCR\n\n`;
+      
+      updateItemStatus(item.id, "completed", mockText);
+      setActiveText(prev => prev + mockText);
+    }
 
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 8;
-      });
-    }, 150);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      setIsProcessing(false);
-      setProgress(100);
-      setExtractedText(
-        "Plano do Projeto Trust AI:\n\n1. Integração Whisper para Áudio\n2. Adicionar Llama 3 Vision para OCR\n3. Implementação de Segurança Avançada\n\nNota: A precisão do reconhecimento de manuscrito foi aprimorada na versão 2.0."
-      );
-      toast({
-        title: "Extração concluída",
-        description: "Texto extraído com sucesso.",
-      });
-    }, 3000);
+    setIsProcessing(false);
+    toast({
+      title: "Extração em Lote Concluída",
+      description: "Todos os textos foram extraídos.",
+    });
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(extractedText);
+    navigator.clipboard.writeText(activeText);
     setCopied(true);
     toast({ title: "Texto copiado" });
     setTimeout(() => setCopied(false), 2000);
@@ -90,29 +91,39 @@ export function OcrPanel() {
               w-full h-full border-2 border-dashed rounded-3xl text-center cursor-pointer transition-all duration-300
               flex flex-col items-center justify-center relative overflow-hidden bg-white shadow-sm group
               ${isDragActive ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-border hover:border-primary/50 hover:shadow-md'}
-              ${!preview ? 'p-8' : 'p-0 border-none ring-1 ring-border'}
             `}
           >
             <input {...getInputProps()} />
             
             <AnimatePresence mode="wait">
-              {preview ? (
-                <motion.div 
-                  key="preview"
+               {ocrItems.length > 0 ? (
+                 <motion.div 
+                  key="list"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="relative w-full h-full group/image"
+                  className="w-full h-full overflow-y-auto max-h-[300px] space-y-2 p-2"
                 >
-                  <img 
-                    src={preview} 
-                    alt="Preview" 
-                    className="w-full h-full object-cover" 
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                    <Button variant="secondary" onClick={(e) => { e.stopPropagation(); setFile(null); setPreview(null); }} className="rounded-full shadow-lg">
-                      Substituir Imagem
-                    </Button>
+                  <div className="flex flex-col items-center mb-4">
+                     <div className="bg-primary/10 p-3 rounded-full mb-2">
+                        <Plus className="h-6 w-6 text-primary" />
+                     </div>
+                     <p className="text-sm font-medium text-muted-foreground">Adicionar mais imagens</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {ocrItems.map((item) => (
+                      <div key={item.id} className="relative aspect-video bg-muted rounded-lg overflow-hidden border border-border/50">
+                         {item.preview && <img src={item.preview} className="w-full h-full object-cover opacity-80" />}
+                         <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white text-xs font-medium p-1 text-center">
+                            {item.status === 'completed' ? <Check className="h-6 w-6" /> : item.name}
+                         </div>
+                         {item.status === 'processing' && (
+                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                              <Loader2 className="h-6 w-6 animate-spin text-white" />
+                           </div>
+                         )}
+                      </div>
+                    ))}
                   </div>
                 </motion.div>
               ) : (
@@ -127,8 +138,8 @@ export function OcrPanel() {
                     <ImageIcon className="h-10 w-10 text-primary group-hover:text-white transition-colors" />
                   </div>
                   <div className="space-y-2">
-                    <p className="font-bold text-xl text-foreground">Arraste uma imagem</p>
-                    <p className="text-muted-foreground">Manuscritos ou documentos impressos</p>
+                    <p className="font-bold text-xl text-foreground">Arraste múltiplas imagens</p>
+                    <p className="text-muted-foreground">Manuscritos ou documentos</p>
                   </div>
                 </motion.div>
               )}
@@ -143,39 +154,22 @@ export function OcrPanel() {
         >
           <Button 
             className="w-full h-14 text-lg rounded-2xl shadow-xl shadow-primary/20 font-semibold transition-all hover:scale-[1.01] active:scale-[0.99]" 
-            disabled={!file || isProcessing}
-            onClick={handleExtract}
+            disabled={ocrItems.filter(i => i.status === 'pending').length === 0 || isProcessing}
+            onClick={processQueue}
           >
             {isProcessing ? (
               <>
                 <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-                Analisando Documento...
+                Analisando Lote...
               </>
             ) : (
               <>
                 <ScanText className="mr-3 h-5 w-5" />
-                Extrair Texto
+                 {ocrItems.length > 0 ? `Extrair de ${ocrItems.filter(i => i.status === 'pending').length} Imagens` : 'Iniciar Extração'}
               </>
             )}
           </Button>
         </motion.div>
-
-        {isProcessing && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="space-y-2 bg-white p-4 rounded-xl border border-border/50 shadow-sm"
-          >
-            <div className="flex justify-between text-sm font-medium text-foreground">
-              <span className="flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin text-primary" />
-                Processando visual...
-              </span>
-              <span className="text-primary">{progress}%</span>
-            </div>
-            <Progress value={progress} className="h-2.5 bg-secondary" indicatorClassName="bg-primary" />
-          </motion.div>
-        )}
       </div>
 
       {/* Output Section */}
@@ -189,10 +183,10 @@ export function OcrPanel() {
           <div className="flex items-center justify-between p-4 border-b border-border/40 bg-secondary/30 backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></div>
-              <span className="text-sm font-semibold text-foreground bg-white px-3 py-1 rounded-full border border-border/50 shadow-sm">Texto Extraído</span>
+              <span className="text-sm font-semibold text-foreground bg-white px-3 py-1 rounded-full border border-border/50 shadow-sm">Texto Combinado</span>
             </div>
             <div className="flex gap-1">
-              <Button variant="ghost" size="sm" onClick={copyToClipboard} disabled={!extractedText} className="h-8 w-8 p-0 rounded-full hover:bg-background">
+              <Button variant="ghost" size="sm" onClick={copyToClipboard} disabled={!activeText} className="h-8 w-8 p-0 rounded-full hover:bg-background">
                  {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
               </Button>
             </div>
@@ -201,10 +195,10 @@ export function OcrPanel() {
             <Textarea 
               className="h-full w-full resize-none border-0 focus-visible:ring-0 p-8 font-sans text-base leading-relaxed bg-transparent text-foreground/80"
               placeholder="O texto extraído aparecerá aqui..."
-              value={extractedText}
+              value={activeText}
               readOnly
             />
-             {!extractedText && (
+             {!activeText && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-10">
                 <ScanText className="h-24 w-24" />
               </div>

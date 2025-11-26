@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Shell } from "@/components/layout/shell";
 import { AudioPanel } from "@/components/transcription/audio-panel";
 import { OcrPanel } from "@/components/transcription/ocr-panel";
+import { ReportView } from "@/components/transcription/report-view";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mic, PenTool } from "lucide-react";
 import { motion } from "framer-motion";
@@ -11,7 +12,7 @@ export default function Home() {
 
   return (
     <Shell>
-      <div className="max-w-7xl mx-auto pt-6 pb-12 space-y-10">
+      <div className="max-w-7xl mx-auto pt-6 pb-24 space-y-10">
         
         {/* Header Section */}
         <div className="text-center space-y-4 max-w-2xl mx-auto">
@@ -70,6 +71,9 @@ export default function Home() {
             </TabsContent>
           </div>
         </Tabs>
+
+        {/* Floating Report View */}
+        <ReportView />
       </div>
     </Shell>
   );
