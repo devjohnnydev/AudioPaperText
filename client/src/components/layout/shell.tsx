@@ -1,7 +1,9 @@
 import { ReactNode } from "react";
-import { Settings, Zap, MessageSquare, FileText } from "lucide-react";
+import { Moon, Sun, Zap, MessageSquare, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 interface ShellProps {
   children: ReactNode;
@@ -9,6 +11,14 @@ interface ShellProps {
 
 export function Shell({ children }: ShellProps) {
   const [location] = useLocation();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
@@ -44,8 +54,18 @@ export function Shell({ children }: ShellProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary transition-colors rounded-full">
-              <Settings className="h-5 w-5" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="text-muted-foreground hover:text-primary transition-colors rounded-full"
+              title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </Button>
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-indigo-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-primary/20">
               AI
