@@ -64,7 +64,7 @@ export async function extractTextFromImage(base64Image: string, mimeType: string
   try {
     const groq = getGroqClient();
     const completion = await groq.chat.completions.create({
-      model: "llama-3.2-90b-vision-preview",
+      model: "llama-3.2-11b-vision-preview",
       messages: [
         {
           role: "user",
