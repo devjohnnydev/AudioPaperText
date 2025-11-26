@@ -2,9 +2,16 @@ import Groq from "groq-sdk";
 import fs from "fs";
 
 // Using Groq - free and fast API
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY || "placeholder", // Avoid crash if key not set yet
-});
+let groq: Groq | null = null;
+
+function getGroqClient(): Groq {
+  if (!groq) {
+    groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY || "placeholder",
+    });
+  }
+  return groq;
+}
 
 /**
  * Check if Groq API key is configured
@@ -18,16 +25,18 @@ export function isGroqConfigured(): boolean {
  */
 export async function transcribeAudio(filePath: string): Promise<string> {
   if (!isGroqConfigured()) {
-    throw new Error("GROQ_API_KEY não configurada. Por favor, adicione sua chave nas configurações.");
+    // Return demo content if API key not configured (for testing)
+    return "📝 Modo Demo: Para usar a transcrição real, configure GROQ_API_KEY nas variáveis de ambiente.";
   }
 
   try {
     const audioFile = fs.createReadStream(filePath);
+    const groq = getGroqClient();
     
     const transcription = await groq.audio.transcriptions.create({
       file: audioFile,
       model: "whisper-large-v3",
-      language: "pt", // Portuguese
+      language: "pt",
       response_format: "json",
     });
 
@@ -43,10 +52,11 @@ export async function transcribeAudio(filePath: string): Promise<string> {
  */
 export async function extractTextFromImage(base64Image: string): Promise<string> {
   if (!isGroqConfigured()) {
-    throw new Error("GROQ_API_KEY não configurada. Por favor, adicione sua chave nas configurações.");
+    return "📸 Modo Demo: Para usar OCR real, configure GROQ_API_KEY nas variáveis de ambiente.";
   }
 
   try {
+    const groq = getGroqClient();
     const completion = await groq.chat.completions.create({
       model: "llama-3.2-90b-vision-preview",
       messages: [
@@ -66,7 +76,7 @@ export async function extractTextFromImage(base64Image: string): Promise<string>
           ],
         },
       ],
-      temperature: 0.1, // Low temperature for accurate transcription
+      temperature: 0.1,
       max_tokens: 2048,
     });
 
@@ -85,7 +95,7 @@ export async function generateIntelligentReport(
   ocrTexts: Array<{ name: string; content: string }>
 ): Promise<string> {
   if (!isGroqConfigured()) {
-    throw new Error("GROQ_API_KEY não configurada. Por favor, adicione sua chave nas configurações.");
+    return `RELATÓRIO DEMO - Trust AI\nData: ${new Date().toLocaleDateString('pt-BR')}\n\nPara gerar relatórios completos, configure GROQ_API_KEY nas variáveis de ambiente.`;
   }
 
   try {
@@ -120,6 +130,7 @@ Crie um RELATÓRIO EXECUTIVO COMPLETO em português (PT-BR) que inclua:
 
 Seja específico, objetivo e profissional. Use formatação clara com títulos e listas.`;
 
+    const groq = getGroqClient();
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
