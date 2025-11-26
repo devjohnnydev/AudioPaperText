@@ -1,9 +1,8 @@
 {
-  "build": {
-    "builder": "nixpacks"
-  },
-  "deploy": {
-    "numReplicas": 1,
-    "startCommand": "npm run build && npm start"
+  "builder": "nixpacks",
+  "buildCommand": "npm run build",
+  "startCommand": "npm start",
+  "variables": {
+    "NIXPACKS_NODE_VERSION": "20"
   }
 }

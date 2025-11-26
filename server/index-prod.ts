@@ -8,30 +8,48 @@ import express, { type Express, type Request } from "express";
 import runApp from "./app";
 
 export async function serveStatic(app: Express, server: Server) {
+  // Health check endpoint for Railway
+  app.get("/health", (_req, res) => {
+    res.json({ status: "healthy" });
+  });
+
   // Support both bundled and unbundled environments
   let distPath: string;
+  const cwd = process.cwd();
   
-  try {
-    // Try using import.meta.url (works in some environments)
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    distPath = path.resolve(__dirname, "public");
-  } catch {
-    // Fallback for Railway/production bundled environment
-    distPath = path.resolve(process.cwd(), "dist", "public");
+  // Try multiple possible locations for the build directory
+  const possiblePaths = [
+    path.resolve(cwd, "dist", "public"),
+    path.resolve(cwd, "public"),
+    path.resolve(import.meta.dirname, "public"),
+  ];
+  
+  for (const candidate of possiblePaths) {
+    if (fs.existsSync(candidate)) {
+      distPath = candidate;
+      break;
+    }
   }
-
-  if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+  
+  if (!distPath) {
+    console.warn(
+      `Build directory not found in: ${possiblePaths.join(", ")}. Continuing without static files.`
     );
+    // Don't throw - let the app continue without static files
+    distPath = possiblePaths[0];
   }
 
+  console.log(`Serving static files from: ${distPath}`);
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    const indexPath = path.resolve(distPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).json({ error: "Not found" });
+    }
   });
 }
 
