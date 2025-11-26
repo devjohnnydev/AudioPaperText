@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Shell } from "@/components/layout/shell";
 import { AudioPanel } from "@/components/transcription/audio-panel";
-import { OcrPanel } from "@/components/transcription/ocr-panel";
 import { ChatPanel } from "@/components/transcription/chat-panel";
 import { ReportView } from "@/components/transcription/report-view";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mic, PenTool, MessageSquare } from "lucide-react";
+import { Mic, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -25,10 +24,6 @@ export default function Home() {
             {activeTab === "audio" ? (
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-600">
                 Áudio para Texto
-              </span>
-            ) : activeTab === "ocr" ? (
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                Manuscrito para Texto
               </span>
             ) : (
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
@@ -58,13 +53,6 @@ export default function Home() {
                 Áudio
               </TabsTrigger>
               <TabsTrigger 
-                value="ocr" 
-                className="rounded-full px-6 py-2.5 text-sm font-medium data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
-              >
-                <PenTool className="h-4 w-4 mr-2" />
-                Manuscrito
-              </TabsTrigger>
-              <TabsTrigger 
                 value="chat" 
                 className="rounded-full px-6 py-2.5 text-sm font-medium data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
               >
@@ -77,9 +65,6 @@ export default function Home() {
           <div className="min-h-[600px] relative">
             <TabsContent value="audio" className="mt-0 h-full focus-visible:ring-0">
               <AudioPanel />
-            </TabsContent>
-            <TabsContent value="ocr" className="mt-0 h-full focus-visible:ring-0">
-              <OcrPanel />
             </TabsContent>
             <TabsContent value="chat" className="mt-0 h-full focus-visible:ring-0">
               <ChatPanel />

@@ -63,6 +63,9 @@ export async function extractTextFromImage(base64Image: string, mimeType: string
 
   try {
     const groq = getGroqClient();
+    
+    console.log(`[OCR] Iniciando extração com mimeType: ${mimeType}, tamanho base64: ${base64Image.length}`);
+    
     const completion = await groq.chat.completions.create({
       model: "llama-3.2-11b-vision-preview",
       messages: [
@@ -71,7 +74,7 @@ export async function extractTextFromImage(base64Image: string, mimeType: string
           content: [
             {
               type: "text",
-              text: "Extraia TODO o texto desta imagem. Transcreva EXATAMENTE como está escrito, incluindo anotações manuscritas, texto impresso, números, símbolos. Mantenha a formatação original. Se houver listas, mantenha-as. Se não houver texto, responda 'Nenhum texto encontrado'.",
+              text: "Extraia TODO o texto desta imagem. Transcreva EXATAMENTE como está escrito, incluindo anotações manuscritas, texto impresso, números, símbolos. Mantenha a formatação original. Se não houver texto, responda 'Nenhum texto encontrado'.",
             },
             {
               type: "image_url",
@@ -83,13 +86,15 @@ export async function extractTextFromImage(base64Image: string, mimeType: string
         },
       ],
       temperature: 0.1,
-      max_tokens: 2048,
+      max_tokens: 4096,
     });
 
-    return completion.choices[0]?.message?.content || "Nenhum texto encontrado";
+    const result = completion.choices[0]?.message?.content || "Nenhum texto encontrado";
+    console.log(`[OCR] Extração concluída: ${result.substring(0, 100)}...`);
+    return result;
   } catch (error: any) {
-    console.error("Erro no OCR:", error);
-    throw new Error("Falha ao extrair texto: " + error.message);
+    console.error("[OCR] Erro detalhado:", error.response?.data || error.message || error);
+    throw new Error("Falha ao extrair texto: " + (error.response?.data?.error?.message || error.message));
   }
 }
 

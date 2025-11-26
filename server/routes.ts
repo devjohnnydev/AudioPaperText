@@ -213,18 +213,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get the last user message
-      const userMessages = messages
-        .filter((m: any) => m.role === "user")
-        .map((m: any) => m.content)
-        .join("\n\n");
-
-      const conversationContext = messages
-        .map((m: any) => `${m.role === "user" ? "Usuário" : "Assistente"}: ${m.content}`)
-        .join("\n");
-
-      const groq = await (await import("groq-sdk")).default;
-      const client = new groq({
+      const Groq = (await import("groq-sdk")).default;
+      const client = new Groq({
         apiKey: process.env.GROQ_API_KEY,
       });
 
