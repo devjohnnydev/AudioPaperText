@@ -199,6 +199,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  /**
+   * POST /api/chat
+   * Chat endpoint for AI conversations
+   */
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { messages } = req.body;
+
+      if (!Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({
+          error: "Nenhuma mensagem fornecida",
+        });
+      }
+
+      // Get the last user message
+      const userMessages = messages
+        .filter((m: any) => m.role === "user")
+        .map((m: any) => m.content)
+        .join("\n\n");
+
+      const conversationContext = messages
+        .map((m: any) => `${m.role === "user" ? "Usuário" : "Assistente"}: ${m.content}`)
+        .join("\n");
+
+      const groq = await (await import("groq-sdk")).default;
+      const client = new groq({
+        apiKey: process.env.GROQ_API_KEY,
+      });
+
+      const completion = await client.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Você é um assistente inteligente e amigável. Responda em português (Brasil). Seja conciso e útil. Se a pergunta for sobre documentos ou áudios, baseie sua resposta no contexto fornecido.",
+          },
+          ...messages.map((m: any) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content,
+          })),
+        ],
+        temperature: 0.7,
+        max_tokens: 1024,
+      });
+
+      const response = completion.choices[0]?.message?.content || "Desculpe, não consegui processar sua pergunta.";
+
+      res.json({
+        success: true,
+        response,
+      });
+    } catch (error: any) {
+      console.error("Erro no chat:", error);
+      res.status(500).json({
+        error: "Erro ao processar chat",
+        details: error.message,
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
